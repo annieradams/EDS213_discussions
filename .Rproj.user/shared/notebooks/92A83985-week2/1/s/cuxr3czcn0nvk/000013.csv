@@ -1,0 +1,16 @@
+"0","# Create Air Quality Data"
+"0","air_quality <- data.frame("
+"0","  Date = c(""2020-01-01"", ""2020/02/01"", ""March 3, 2020"", NA, ""2020-04-01""),"
+"0","  Location = c(""Site A"", ""Site B"", ""Site C"", ""Site A"", ""Site D""),"
+"0","  PM2_5 = c(12.3, ""fifteen"", 7.8, 9.0, 10.2),"
+"0","  NO2 = c(20, 30, 25, ""NA"", 40),"
+"0","  O3 = c(15, 20, ""twenty"", 30, 35)"
+"0",")"
+"0",""
+"0","knitr::kable(head(air_quality))"
+"2","Registered S3 methods overwritten by 'htmltools':
+  method               from         
+  print.html           tools:rstudio
+  print.shiny.tag      tools:rstudio
+  print.shiny.tag.list tools:rstudio
+"

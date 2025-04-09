@@ -1,0 +1,277 @@
+---
+title: "Week2"
+format: html
+editor: visual
+---
+
+```{r}
+# Create Environmental Datasets for Data Cleaning Exercise
+# This code avoids formatting issues with the trim parameter
+
+# Load required packages
+library(tidyverse)
+
+# Set seed for reproducibility
+set.seed(42)
+
+# Part 1: Create Sampling Stations Dataset --------------------------
+
+# Define station information directly
+stations <- data.frame(
+  station_id = c(
+    "ST-05", "ST-12", "ST-08", "ST-03", "st-10", 
+    "ST-14", "st-07", "ST-15", "ST-01", "ST-11", 
+    "ST-04", "ST-09", "ST-06"
+  ),
+  station_name = c(
+    "Downtown River Point", "Lake Observation Deck", "Forest Stream Monitoring",
+    "Agricultural Runoff Station", "Mountain Spring Site", "National Park Waterway",
+    "Urban Canal Point", "Coastal Estuary Monitor", "Wetland Reserve Area",
+    "Reservoir North Point", "Treatment Plant Outflow", "Suburban Stream Junction",
+    "Industry Adjacent"
+  ),
+  latitude = c(
+    42.3601, 42.5201, 42.4075, 42.2793, 42.6371, 
+    42.5195, 42.3770, 42.2539, 42.4837, 42.5465, 
+    42.3188, 42.4993, 42.3654
+  ),
+  longitude = c(
+    -71.0589, -70.8929, -71.1162, -71.4162, -70.9642, 
+    -71.2622, -71.1167, -71.0244, -71.2428, -71.1542, 
+    -71.0846, -71.0405, -71.1824
+  ),
+  water_body_type = c(
+    "river", "lake", "stream", "river", "spring", 
+    "river", "canal", "estuary", "wetland", "reservoir", 
+    "river", "stream", "river"
+  ),
+  water_body_name = c(
+    "Charles River", "Crystal Lake", "Pine Creek", "Mill River", "Eagle Spring", 
+    "Green River", "Industrial Canal", "Harbor Estuary", "Cedar Bog", "City Reservoir", 
+    "Charles River", "Maple Creek", "Charles River"
+  ),
+  elevation_m = c(
+    10, 143, 87, 45, 312, 
+    156, 12, 2, 65, 98, 
+    8, 52, 15
+  ),
+  established_date = c(
+    "2015-03-12", "5/18/2017", "2016-09-30", "2015-03-12", "01/30/2018", 
+    "2019-05-15", "2016-09-30", "2020-11-08", "2014-04-21", "02/28/2018", 
+    "2015-03-12", "2018-01-30", "2016-04-05"
+  ),
+  region = c(
+    "Northeast", "Northeast", "Northeast", "Northeast", "Northeast",
+    "Northeast", "Northeast", "Northeast", "Northeast", "Northeast",
+    "Northeast", "Northeast", "Northeast"
+  ),
+  active = c(
+    "TRUE", "Yes", "TRUE", "yes", "T", 
+    "true", "Active", "TRUE", "no", "inactive", 
+    "F", "1", "decommissioned"
+  ),
+  stringsAsFactors = FALSE
+)
+
+# Part 2: Create Water Quality Measurements Dataset -----------------
+
+# Function to create measurement with some variability
+create_measurement <- function(base_value, variation = 0.2, na_prob = 0.05, error_prob = 0.03) {
+  # Introduce some NA values
+  if (runif(1) < na_prob) {
+    return(NA)
+  }
+  
+  # Introduce some errors
+  if (runif(1) < error_prob) {
+    errors <- c("ERROR", "#VALUE!", NA)
+    return(sample(errors, 1))
+  }
+  
+  # Generate a valid measurement with variation
+  value <- base_value * (1 + runif(1, -variation, variation))
+  return(value)
+}
+
+# Create sample dates (as Date objects for safety)
+sample_dates <- seq(as.Date("2023-06-15"), as.Date("2023-06-21"), by = "day")
+
+# Create different date formats - avoiding format() trim issues
+format_date <- function(date) {
+  formats <- list(
+    function(d) as.character(d),  # YYYY-MM-DD
+    function(d) paste0(format(d, "%d"), "/", format(d, "%m"), "/", format(d, "%Y")),  # DD/MM/YYYY
+    function(d) paste0(format(d, "%Y"), "/", format(d, "%m"), "/", format(d, "%d")),  # YYYY/MM/DD
+    function(d) paste0(format(d, "%d"), "-", format(d, "%m"), "-", format(d, "%Y"))   # DD-MM-YYYY
+  )
+  formatter <- sample(formats, 1)[[1]]
+  return(formatter(date))
+}
+
+# Create different time formats - avoiding format() trim issues
+format_time <- function() {
+  hour <- sample(7:17, 1)
+  minute <- sample(0:59, 1)
+  second <- sample(c(0, 0, 0, sample(1:59, 1)), 1)  # Often 0 seconds
+  
+  formats <- c(
+    paste0(sprintf("%02d", hour), ":", sprintf("%02d", minute), ":", sprintf("%02d", second)),
+    paste0(sprintf("%02d", hour), ":", sprintf("%02d", minute)),
+    if(runif(1) < 0.1) NA else paste0(sprintf("%02d", hour), ":", sprintf("%02d", minute), ":", sprintf("%02d", second))
+  )
+  
+  return(sample(formats, 1))
+}
+
+# Create base values for each station
+station_ids <- unique(stations$station_id)
+station_base_values <- data.frame(
+  station_id = station_ids,
+  temp_base = runif(length(station_ids), 21, 26),
+  ph_base = runif(length(station_ids), 6.5, 7.8),
+  oxygen_base = runif(length(station_ids), 6.5, 8.8),
+  turbidity_base = runif(length(station_ids), 3, 15),
+  conductivity_base = runif(length(station_ids), 270, 500),
+  nitrate_base = runif(length(station_ids), 0.5, 2.5),
+  phosphate_base = runif(length(station_ids), 0.08, 0.35),
+  ecoli_base = round(runif(length(station_ids), 5, 80)),
+  stringsAsFactors = FALSE
+)
+
+# Generate water quality measurements
+# Pre-allocate lists for each column
+sample_ids <- c()
+station_ids_list <- c()
+dates_collected <- c()
+times_collected <- c()
+temperatures <- c()
+ph_levels <- c()
+dissolved_oxygen <- c()
+turbidity <- c()
+conductivity <- c()
+nitrate <- c()
+phosphate <- c()
+ecoli <- c()
+notes_list <- c()
+
+sample_id <- 1001
+for (date in sample_dates) {
+  # Select 3-4 stations to sample each day
+  day_stations <- sample(station_base_values$station_id, sample(3:4, 1))
+  
+  for (station in day_stations) {
+    # Get base values for this station
+    base <- station_base_values[station_base_values$station_id == station, ]
+    
+    # Collect values for each column
+    sample_ids <- c(sample_ids, sample_id)
+    station_ids_list <- c(station_ids_list, station)
+    dates_collected <- c(dates_collected, format_date(date))
+    times_collected <- c(times_collected, format_time())
+    
+    # Create measurements
+    temperatures <- c(temperatures, create_measurement(base$temp_base))
+    ph_levels <- c(ph_levels, create_measurement(base$ph_base))
+    dissolved_oxygen <- c(dissolved_oxygen, create_measurement(base$oxygen_base))
+    turbidity <- c(turbidity, create_measurement(base$turbidity_base))
+    conductivity <- c(conductivity, create_measurement(base$conductivity_base))
+    nitrate <- c(nitrate, create_measurement(base$nitrate_base))
+    phosphate <- c(phosphate, create_measurement(base$phosphate_base))
+    ecoli <- c(ecoli, round(create_measurement(base$ecoli_base)))
+    
+    # Add notes
+    notes <- c(
+      "clear day, standard collection",
+      "high turbidity due to recent rainfall",
+      "early morning collection, slightly foggy",
+      "afternoon collection",
+      "downstream from agricultural area",
+      "early morning, calm water",
+      "equipment malfunction - temperature",
+      "mild rain during collection",
+      "standard collection",
+      "high pollution suspected, water has odor",
+      "pristine area, upstream from park",
+      "equipment failure, using backup thermometer next time",
+      "moderate flow, partly cloudy day"
+    )
+    
+    notes_list <- c(notes_list, sample(notes, 1))
+    
+    sample_id <- sample_id + 1
+  }
+}
+
+# Create the water quality dataframe
+water_quality <- data.frame(
+  sample_id = sample_ids,
+  station_id = station_ids_list,
+  date_collected = dates_collected,
+  time_collected = times_collected,
+  temperature_c = temperatures,
+  ph_level = ph_levels,
+  dissolved_oxygen_mg_l = dissolved_oxygen,
+  turbidity_ntu = turbidity,
+  conductivity_μs_cm = conductivity,
+  nitrate_mg_l = nitrate,
+  phosphate_mg_l = phosphate,
+  e_coli = ecoli,
+  notes = notes_list,
+  stringsAsFactors = FALSE
+)
+
+# Introduce some errors and inconsistencies
+
+# 1. Modify some station IDs to use underscore instead of hyphen
+indices <- sample(1:nrow(water_quality), 2)
+water_quality$station_id[indices] <- gsub("-", "_", water_quality$station_id[indices])
+
+# 2. Change some pH values to use comma instead of period for decimal
+ph_indices <- which(!is.na(water_quality$ph_level))
+indices <- sample(ph_indices, min(2, length(ph_indices)))
+water_quality$ph_level[indices] <- gsub("\\.", ",", as.character(water_quality$ph_level[indices]))
+
+# 3. Make some nitrate values "N/A" instead of NA
+na_indices <- which(is.na(water_quality$nitrate_mg_l))
+if (length(na_indices) > 0) {
+  indices <- sample(na_indices, min(1, length(na_indices)))
+  water_quality$nitrate_mg_l[indices] <- "N/A"
+}
+
+# 4. Make some phosphate values use comma for decimal
+phos_indices <- which(!is.na(water_quality$phosphate_mg_l))
+indices <- sample(phos_indices, min(2, length(phos_indices)))
+water_quality$phosphate_mg_l[indices] <- gsub("\\.", ",", as.character(water_quality$phosphate_mg_l[indices]))
+
+# 5. Make a couple of temperature readings errors
+if (length(which(!is.na(water_quality$temperature_c))) >= 2) {
+  error_indices <- sample(which(!is.na(water_quality$temperature_c)), 2)
+  water_quality$temperature_c[error_indices[1]] <- "ERROR"
+  water_quality$temperature_c[error_indices[2]] <- "#VALUE!"
+}
+
+# Fix column name for dissolved oxygen (replace / with _)
+names(water_quality)[names(water_quality) == "dissolved_oxygen_mg_l"] <- "dissolved_oxygen_mg/l"
+
+# Save the datasets
+write.csv(stations, "sampling_stations_raw.csv", row.names = FALSE)
+write.csv(water_quality, "water_quality_raw.csv", row.names = FALSE)
+
+# Print summary
+cat("Created datasets:\n")
+cat("- sampling_stations_raw.csv:", nrow(stations), "stations\n")
+cat("- water_quality_raw.csv:", nrow(water_quality), "measurements\n")
+
+# Print some intentional issues for reference
+cat("\nIntentional issues introduced:\n")
+cat("1. Some station IDs use underscore instead of hyphen\n")
+cat("2. Date formats are inconsistent\n")
+cat("3. Some pH and phosphate values use comma as decimal separator\n")
+cat("4. Some missing values are coded as 'N/A'\n")
+cat("5. Some temperature readings are errors ('ERROR', '#VALUE!')\n")
+cat("6. Boolean values in 'active' column use different representations\n")
+cat("7. Station IDs have inconsistent capitalization\n")
+```
+
+```{}
+```

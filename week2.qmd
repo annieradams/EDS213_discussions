@@ -1,0 +1,59 @@
+---
+format: 
+  revealjs:
+    incremental: true
+    slide-number: true
+    progress: true
+    code-line-numbers: true
+    code-copy: true
+    theme: 
+      - EDS213_slides.scss
+    embed-resources: true
+---
+
+##  {#title-slide data-menu-title="Title Slide" background="#cad2c5"}
+
+[EDS 213 Discussion 2]{.custom-title}
+
+<hr class="hr-off-white">
+
+[Data Cleaning]{.custom-subtitle}
+
+
+
+
+##  {#Database#1 data-menu-title="Database # 1"}
+[Database #1 ]{.slide-title}
+
+```{r}
+# Create Air Quality Data
+air_quality <- data.frame(
+  Date = c("2020-01-01", "2020/02/01", "March 3, 2020", NA, "2020-04-01"),
+  Location = c("Site A", "Site B", "Site C", "Site A", "Site D"),
+  PM2_5 = c(12.3, "fifteen", 7.8, 9.0, 10.2),
+  NO2 = c(20, 30, 25, "NA", 40),
+  O3 = c(15, 20, "twenty", 30, 35)
+)
+
+knitr::kable(head(air_quality))
+
+# Create Water Quality Data
+water_quality <- data.frame(
+  Sample_Date = c("01-01-2020", "2020-02-01", "03-03-2020", "2020-Apr-04", "2020-05-01"),
+  Site_Name = c("River X", "Lake Y", "River X", "Lake Z", "River X"),
+  pH = c(6.5, 7.0, 7.5, "7.2", 8.1),
+  Turbidity = c(3.2, 2.8, NA, 3.5, 300),  # Note the outlier in Turbidity
+  Lead_Concentration = c(0.05, 0.07, "0.1", 0.04, "0.030 ppm")  # Note the unit in the last entry
+)
+
+knitr::kable(head(water_quality))
+```
+
+##  {#Database#1 data-menu-title="Database # 1 Cleaning"}
+[Database #1 Cleaning ]{.slide-title}
+
+- Standaradize date formats
+- Convert PM 2.5 to numeric
+- Ensure NAs are actually numeric
+- Consistent naming across tables
+- 
