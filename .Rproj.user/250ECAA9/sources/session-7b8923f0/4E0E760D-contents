@@ -22,6 +22,12 @@ format:
 
 
 
+
+
+
+
+
+
 ##  {#Database#1 data-menu-title="Database # 1"}
 [Database #1 ]{.slide-title}
 
@@ -30,6 +36,7 @@ library(tidyverse)
 library(dplyr)
 library(kableExtra)
 ```
+
 
 
 ```{r}

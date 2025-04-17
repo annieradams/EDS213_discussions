@@ -45,6 +45,13 @@ hr {
 
 
 
+.highlight {
+    background-color: $light-green;
+    font-weight: bold;
+  }
+
+
+
 // custom slide title
 .custom-title {
   font-family: $montserrat;
@@ -83,6 +90,11 @@ hr {
 }
 
 
+.no-fragment * {
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
 
 
 
