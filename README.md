@@ -1,4 +1,7 @@
 
+This repository houses the materials for the weekly discussion sections for EDS 213 - Databases and Data Management. The schedule for the sessions are as follows: 
+
+
 | Week | Task |
 | ------------- | ------------- |
 | 1 | Select a dataset and understand the relationships among the different tables to define a schema. You can pick a dataset(s) from the provided list, or find your own! |
